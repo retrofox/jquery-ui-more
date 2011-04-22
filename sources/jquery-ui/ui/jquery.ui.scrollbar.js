@@ -19,15 +19,18 @@
         if(!this.element.children(cp+'placeholder').length)
           this.element.wrapInner($('<div class="' + cp + 'placeholder" />'));
         this.placeholder = this.element.find('.'+cp+'placeholder')
+          .css('position', 'relative')
           .height(this.element.height() || this.options.height);
         
         if(!this.placeholder.find(cp+'wrapper').length)
           this.placeholder.wrapInner($('<div class="' + cp + 'wrapper" />'));
-        this.wrapper = this.placeholder.find('.'+cp+'wrapper').outerHeight(this.placeholder.outerHeight());
+        this.wrapper = this.placeholder.find('.'+cp+'wrapper')
+          .css('overflow', 'hidden')
+          .outerHeight(this.placeholder.outerHeight());
 
         if(!this.wrapper.find(cp+'container').length)
           this.wrapper.wrapInner($('<div class="' + cp + 'container" />'));
-        this.container = this.wrapper.find('.'+cp+'container')
+        this.container = this.wrapper.find('.'+cp+'container');
 
         // dimms
         this.offset = {
@@ -43,7 +46,15 @@
         if(this.offset.y > 0) {
         // Slider
         if(!this.wrapper.find('.ui-slider-vertical').length)
-          this.slider.y =  $('<div class="ui-slider-vertical" />').appendTo(this.placeholder);
+          this.slider.y =  $('<div class="ui-slider-vertical" />')
+            .css({
+              position: 'absolute',
+              top: 0,
+              right: 0,
+              margin: '10px 0',
+              width: 0
+            })
+            .appendTo(this.placeholder);
         
         (this.slider.y).slider({
           orientation: "vertical",
@@ -68,6 +79,7 @@
         });
 
         handle.css({
+          left: -Math.round(handle.outerHeight()/2),
           marginTop: -Math.round(mH)
         });
 
