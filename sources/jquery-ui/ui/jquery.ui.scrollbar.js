@@ -15,24 +15,30 @@
 
         var cp = this.options.classPrefix;
 
-        // scrollbar elements
+        // * scrollbar elements *
+
+        // ** scrollbar-placeholder **
         if(!this.element.children(cp+'placeholder').length)
           this.element.wrapInner($('<div class="' + cp + 'placeholder" />'));
+
         this.placeholder = this.element.find('.'+cp+'placeholder')
           .css('position', 'relative')
           .height(this.element.height() || this.options.height);
-        
+       
+        // ** scrollbar-wrapper
         if(!this.placeholder.find(cp+'wrapper').length)
           this.placeholder.wrapInner($('<div class="' + cp + 'wrapper" />'));
+
         this.wrapper = this.placeholder.find('.'+cp+'wrapper')
           .css('overflow', 'hidden')
           .outerHeight(this.placeholder.outerHeight());
 
+        // ** scrollbar-container **
         if(!this.wrapper.find(cp+'container').length)
           this.wrapper.wrapInner($('<div class="' + cp + 'container" />'));
         this.container = this.wrapper.find('.'+cp+'container');
 
-        // dimms
+        // offset
         this.offset = {
           y: this.container.outerHeight() - this.wrapper.outerHeight()
         }
@@ -42,54 +48,56 @@
 
     , _addScrollbar: function() {
         var self = this;
-        // Y scrollbar
+
+        // * Y scrollbar *
         if(this.offset.y > 0) {
-        // Slider
-        if(!this.wrapper.find('.ui-slider-vertical').length)
-          this.slider.y =  $('<div class="ui-slider-vertical" />')
-            .css({
-              position: 'absolute',
-              top: 0,
-              right: 0,
-              margin: '10px 0',
-              width: 0
-            })
-            .appendTo(this.placeholder);
+
+          // Slider
+          if(!this.wrapper.find('.ui-slider-vertical').length)
+            this.slider.y =  $('<div class="ui-slider-vertical" />')
+              .css({
+                position: 'absolute',
+                top: 0,
+                right: 0,
+                margin: '10px 0',
+                width: 0
+              })
+              .appendTo(this.placeholder);
         
-        (this.slider.y).slider({
-          orientation: "vertical",
-          min: 0,
-          max: 100,
-          value: 100,
-          slide: function( event, ui ){
-            self.setPosition(100-ui.value);
-          }
+          (this.slider.y).slider({
+            orientation: "vertical",
+            min: 0,
+            max: 100,
+            value: 100,
+            slide: function( event, ui ){
+              self.setPosition(100-ui.value);
+            }
+          });
+
+          //  dims
+          var handle = this.slider.y.find('.ui-slider-handle')
+            , hH = handle.outerHeight()
+            , mH = Math.round(hH/2)
+            , hS = this.placeholder.outerHeight() - parseInt(this.slider.y.css('margin-top'))*2 - hH
+
+          // size/position corrections
+          this.slider.y.css({
+            height: hS,
+            top: hH
+          });
+
+          handle.css({
+            left: -Math.round(handle.outerHeight()/2),
+            marginTop: -Math.round(mH)
+          });
+
+        // mousewheel to placeholder
+        this.placeholder.mousewheel(function(ev, d, x, y){
+          var vs = self.slider.y.slider('value');
+          self.slider.y.slider('value', vs+d*self.step.y);
+
+          self.setPosition(100 - self.slider.y.slider('value'));
         });
-
-        //  dims
-        var handle = this.slider.y.find('.ui-slider-handle')
-          , hH = handle.outerHeight()
-          , mH = Math.round(hH/2)
-          , hS = this.placeholder.outerHeight() - parseInt(this.slider.y.css('margin-top'))*2 - hH
-
-        // size/position corrections
-        this.slider.y.css({
-          height: hS,
-          top: hH
-        });
-
-        handle.css({
-          left: -Math.round(handle.outerHeight()/2),
-          marginTop: -Math.round(mH)
-        });
-
-      // mousewheel to placeholder
-      this.placeholder.mousewheel(function(ev, d, x, y){
-        var vs = self.slider.y.slider('value');
-        self.slider.y.slider('value', vs+d*self.step.y);
-
-        self.setPosition(100 - self.slider.y.slider('value'));
-      });
 
       }
     }
