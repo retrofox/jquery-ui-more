@@ -52,14 +52,14 @@
         // * Y scrollbar *
         if(this.offset.y > 0) {
 
-          // Slider
+          // add slider
           if(!this.wrapper.find('.ui-slider-vertical').length)
             this.slider.y =  $('<div class="ui-slider-vertical" />')
               .css({
                 position: 'absolute',
                 top: 0,
                 right: 0,
-                margin: '10px 0',
+//                margin: '10px 0',
                 width: 0
               })
               .appendTo(this.placeholder);
@@ -74,20 +74,22 @@
             }
           });
 
-          //  dims
-          var handle = this.slider.y.find('.ui-slider-handle')
+          // recalculation of position
+          var handle = this.slider.y.find('.ui-slider-handle')  // slide handle element
             , hH = handle.outerHeight()
             , mH = Math.round(hH/2)
             , hS = this.placeholder.outerHeight() - parseInt(this.slider.y.css('margin-top'))*2 - hH
 
-          // size/position corrections
+          // esislider size/position
           this.slider.y.css({
             height: hS,
             top: hH
           });
 
+          console.debug('handle[0] -> ', handle[0]);
+          // 
           handle.css({
-            left: -Math.round(handle.outerHeight()/2),
+            left: -Math.round(handle.outerWidth()/2),
             marginTop: -Math.round(mH)
           });
 
