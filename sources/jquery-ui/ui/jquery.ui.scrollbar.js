@@ -1,7 +1,7 @@
 (function($) {
   $.widget( "ui.scrollbar", {
       options: {
-          sides: 'both'
+          sides: 'y'
         , classPrefix: 'scrollbar-'
         , height: 300
       }
@@ -13,7 +13,18 @@
           y: 10
         };
 
-        var cp = this.options.classPrefix;
+        // alias
+        var _o = this.options
+          , cp = _o.classPrefix
+          ;
+        // determine which bar will be added
+        this.add = {
+          x: _o.sides == 'both' || _o.sides == 'x' ? true : false,
+          y: _o.sides == 'both' || _o.sides == 'y' ? true : false
+        }
+
+        console.debug('this.add -> ', this.add);
+
 
         // * scrollbar elements *
 
@@ -30,7 +41,8 @@
           this.placeholder.wrapInner($('<div class="' + cp + 'wrapper" />'));
 
         this.wrapper = this.placeholder.find('.'+cp+'wrapper')
-          .css('overflow', 'hidden')
+          //.css('overflow', 'hidden')
+          .css('overflow', 'auto')
           .outerHeight(this.placeholder.outerHeight());
 
         // ** scrollbar-container **
@@ -59,7 +71,6 @@
                 position: 'absolute',
                 top: 0,
                 right: 0,
-//                margin: '10px 0',
                 width: 0
               })
               .appendTo(this.placeholder);
@@ -86,7 +97,6 @@
             top: hH
           });
 
-          console.debug('handle[0] -> ', handle[0]);
           // 
           handle.css({
             left: -Math.round(handle.outerWidth()/2),
