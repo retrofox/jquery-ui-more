@@ -1,7 +1,7 @@
 (function($) {
   $.widget( "ui.scrollbar", {
       options: {
-          sides: 'y'
+          sides: 'both'
         , classPrefix: 'scrollbar-'
         , height: 300
       }
@@ -26,16 +26,16 @@
 
         // dims to calculate
         var _d = this.dims = {x: {}, y: {}};
+        _d.x.h = this.element.width();
+        _d.y.h = this.element.height();
 
         // ** scrollbar-placeholder **
         if(!this.element.children(cp+'placeholder').length)
           this.element.wrapInner($('<div class="' + cp + 'placeholder" />'));
 
-        _d.x.h = this.element.width();
-        _d.y.h = this.element.height();
-
         this.placeholder = this.element.find('.'+cp+'placeholder')
           .css('position', 'relative')
+          .width(_d.x.h)
           .height(_d.y.h);
        
         // ** scrollbar-wrapper
@@ -44,21 +44,24 @@
         
         this.wrapper = this.placeholder.find('.'+cp+'wrapper')
           .css('overflow', 'hidden')
+          .outerWidth(_d.x.h)
           .outerHeight(_d.y.h);
 
         // ** scrollbar-container **
-        if(!this.wrapper.find(cp+'container').length)
+/*        if(!this.wrapper.find(cp+'container').length)
           this.wrapper.wrapInner($('<div class="' + cp + 'container" />'));
         this.container = this.wrapper.find('.'+cp+'container');
-
-        _d.x.c = this.container.outerWidth();
-        _d.y.c = this.container.outerHeight();
+*/
+        _d.x.c = this.wrapper.children().outerWidth();
+        _d.y.c = this.wrapper.children().outerHeight();
 
         // percentage
         _d.y.p = _d.y.h/_d.y.c;
+        _d.x.p = _d.x.h/_d.x.c;
 
         // offset
         this.offset = {
+          x: _d.x.c - _d.x.h,
           y: _d.y.c - _d.y.h
         }
 
@@ -69,66 +72,91 @@
     , _addScrollbar: function() {
         var self = this;
 
-        // * Y scrollbar *
-        if(this.add.y && this.offset.y > 0) {
+        // add slider
+        var addSlider = function(type) {
+          var isV = type == 'vertical'
+            , dims = self.dims[(isV ? 'y' : 'x')]
 
-          // add slider
-          if(!this.wrapper.find('.ui-slider-vertical').length)
-            this.slider.y =  $('<div class="ui-slider-vertical" />')
-              .css({
+          // scrollbar css properties
+          var cssPrps = {
                 position: 'absolute',
-                top: 0,
-                right: 0,
-                width: 0
-              })
-              .appendTo(this.placeholder);
-        
-          (this.slider.y).slider({
-            orientation: "vertical",
+              };
+            cssPrps = $.extend(cssPrps, isV ? {
+              top: 0,
+              right: 0,
+              width: 0
+            } : {
+              bottom: 0,
+              left: 0,
+              height: 0
+            });
+
+          if(!self.wrapper.find('.ui-slider-' + type).length)
+            var elSlider = self.slider[isV ? 'y' : 'x'] =  $('<div class="ui-slider-'+type+'" />')
+              .css(cssPrps)
+              .appendTo(self.placeholder);
+
+          elSlider.slider({
+            orientation: type,
             min: 0,
             max: 100,
-            value: 100,
+            value: isV ? 100 : 0,
             slide: function( event, ui ){
-              self.setPosition(100-ui.value);
+              self.setPosition(isV ? (100-ui.value) : ui.value, isV);
             }
           });
 
           // slide handle element
-          var handle = this.slider.y.find('.ui-slider-handle');
+          var handle = elSlider.find('.ui-slider-handle');
 
-          // set handle height
-          handle.outerHeight(Math.round(this.dims.y.h*this.dims.y.p));
+          // set handle height/width
+          handle['outer' + (isV ? 'Height' : 'Width')](Math.round(dims.h*dims.p));
           
           // re-calculate positions/dims
-          var hH = handle.outerHeight()
+          var hH = handle['outer'+ (isV ? 'Height' : 'Width')]()
             , hmH = Math.round(hH/2)
-            , hS = this.dims.y.h - parseInt(this.slider.y.css('margin-top'))*2 - hH
+            , hS = dims.h - parseInt(elSlider.css(isV ? 'margin-top' : 'margin-left'))*2 - hH
 
           // slider size/position
-          this.slider.y.css({
+          elSlider.css(isV ? {
             height: hS,
             top: hH
+          } : {
+            width: hS,
+            left: hmH
           });
 
           // handle slide/position 
-          handle.css({
+          handle.css(isV ? {
             left: -Math.round(handle.outerWidth()/2),
             marginTop: -Math.round(hmH)
+          }: {
+            top: -Math.round(handle.outerHeight()/2),
+            marginLeft: -Math.round(hmH)
           });
 
+
+
         // add mousewheel event
-        this.placeholder.mousewheel(function(ev, d, x, y){
+        self.placeholder.mousewheel(function(ev, d, x, y){
           ev.preventDefault();
-          var vs = self.slider.y.slider('value');
-          self.slider.y.slider('value', vs+d*self.step.y);
+          var vs = elSlider.slider('value');
+          elSlider.slider('value', vs+d*self.step[isV ? 'y' : 'x']);
 
-          self.setPosition(100 - self.slider.y.slider('value'));
+          self.setPosition(100 - elSlider.slider('value'), isV);
         });
-
       }
+
+      if(this.add.y && this.offset.y > 0)
+        addSlider('vertical');
+
+      if(this.add.x && this.offset.x > 0)
+        addSlider('horizontal');
+
+
     }
-    , setPosition: function(v){ 
-        this.wrapper.scrollTop(this.offset.y*v/100);
+    , setPosition: function(v, isV){
+        this.wrapper['scroll' + (isV ? 'Top' : 'Left')](this.offset[isV ? 'y' : 'x']*v/100);
       }
 
 
