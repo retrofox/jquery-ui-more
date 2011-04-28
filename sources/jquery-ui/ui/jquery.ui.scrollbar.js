@@ -9,8 +9,8 @@
     , _create: function() {
         this.slider = {};
         this.step = {
-          x: 10,
-          y: 10
+          x: 40,
+          y: 40
         };
 
         // alias
@@ -97,7 +97,7 @@
           var handle = this.slider.y.find('.ui-slider-handle');
 
           // set handle height
-          handle.outerHeight(this.dims.y.h*this.dims.y.p);
+          handle.outerHeight(Math.round(this.dims.y.h*this.dims.y.p));
           
           // re-calculate positions/dims
           var hH = handle.outerHeight()
