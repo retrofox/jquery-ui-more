@@ -118,6 +118,7 @@
 
         // add mousewheel event
         this.placeholder.mousewheel(function(ev, d, x, y){
+          ev.preventDefault();
           var vs = self.slider.y.slider('value');
           self.slider.y.slider('value', vs+d*self.step.y);
 
