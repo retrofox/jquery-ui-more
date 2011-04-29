@@ -17,14 +17,8 @@
 
         // alias
         var _o = this.options
-          , cp = _o.classPrefix
           , _sd = _o.sides
           ;
-        // determine which bar will be added
-        this.add = {
-          x: _sd == 'both' || _o.sides == 'x' ? true : false,
-          y: _sd == 'both' || _o.sides == 'y' ? true : false
-        }
 
         // dims to calculate
         var _d = this.dims = {
@@ -41,34 +35,48 @@
         _d.y.p = _d.y.h/_d.y.c;
         _d.x.p = _d.x.h/_d.x.c;
 
-
-        // ** scrollbar-placeholder **
-        if(!this.element.children(cp+'placeholder').length)
-          this.element.wrapInner($('<div class="' + cp + 'placeholder" />'));
-
-        this.placeholder = this.element.find('.'+cp+'placeholder')
-          .css('position', 'relative')
-          .width(_d.x.h)
-          .height(_d.y.h);
-       
-        // ** scrollbar-wrapper
-        if(!this.placeholder.find(cp+'wrapper').length)
-          this.placeholder.wrapInner($('<div class="' + cp + 'wrapper" />'));
-        
-        this.wrapper = this.placeholder.find('.'+cp+'wrapper')
-          .css('overflow', 'hidden')
-          .outerWidth(_d.x.h)
-          .outerHeight(_d.y.h);
-
         // offset
         this.offset = {
           x: _d.x.c - _d.x.h,
           y: _d.y.c - _d.y.h
         }
 
+        // determine which bar will be added
+        this.add = {
+          x: (_sd == 'both' || _o.sides == 'x' ? true : false) && (this.offset.x > 0),
+          y: (_sd == 'both' || _o.sides == 'y' ? true : false) && (this.offset.y > 0)
+        }
+
+        // add aditional DOM elements
+        this._addElements();
+
         // add Scrollbar
         this._addScrollbar();
       }
+
+    , _addElements: function() {
+        if(this.add.x || this.add.y) {
+          var cp = this.options.classPrefix
+
+          // ** scrollbar-placeholder **
+          if(!this.element.children(cp+'placeholder').length)
+            this.element.wrapInner($('<div class="' + cp + 'placeholder" />'));
+
+          this.placeholder = this.element.find('.'+cp+'placeholder')
+            .css('position', 'relative')
+            .width(this.dims.x.h)
+            .height(this.dims.y.h);
+       
+          // ** scrollbar-wrapper
+          if(!this.placeholder.find(cp+'wrapper').length)
+            this.placeholder.wrapInner($('<div class="' + cp + 'wrapper" />'));
+        
+          this.wrapper = this.placeholder.find('.'+cp+'wrapper')
+            .css('overflow', 'hidden')
+            .outerWidth(this.dims.x.h)
+            .outerHeight(this.dims.y.h);
+        }
+     }
 
     , _addScrollbar: function() {
         var self = this;
@@ -137,34 +145,34 @@
             marginLeft: -Math.round(hmH)
           });
 
+          // add mousewheel event
+          self.placeholder.mousewheel(function(ev, d, x, y){
+            ev.preventDefault();
+            var vs = elSlider.slider('value');
+            elSlider.slider('value', vs+d*self.step[isV ? 'y' : 'x']);
 
+            self.setPosition(100 - elSlider.slider('value'), isV);
+          });
+        }
 
-        // add mousewheel event
-        self.placeholder.mousewheel(function(ev, d, x, y){
-          ev.preventDefault();
-          var vs = elSlider.slider('value');
-          elSlider.slider('value', vs+d*self.step[isV ? 'y' : 'x']);
+        if(this.add.y)
+          addSlider('vertical');
 
-          self.setPosition(100 - elSlider.slider('value'), isV);
-        });
+        if(this.add.x)
+          addSlider('horizontal');
+
       }
 
-      if(this.add.y && this.offset.y > 0)
-        addSlider('vertical');
-
-      if(this.add.x && this.offset.x > 0)
-        addSlider('horizontal');
-    }
     , setPosition: function(v, isV){
         this.wrapper['scroll' + (isV ? 'Top' : 'Left')](this.offset[isV ? 'y' : 'x']*v/100);
       }
 
 
     , _destroy: function(){ 
-        this.placeholder.remove();
+//        this.placeholder.remove();
       }
 
   });
 })(jQuery);
 //TODO
-//implement horizontal scrollbar
+// destroy method
