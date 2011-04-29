@@ -4,13 +4,15 @@
           sides: 'both'
         , classPrefix: 'scrollbar-'
         , height: 300
+        , handleMinHeight: 50
+        , handleMinWidth: 50
       }
     
-    , _create: function() {
+    , _create: function(options) {
         this.slider = {};
         this.step = {
-          x: 40,
-          y: 40
+          x: 20,
+          y: 20
         };
 
         // alias
@@ -25,9 +27,20 @@
         }
 
         // dims to calculate
-        var _d = this.dims = {x: {}, y: {}};
-        _d.x.h = this.element.width();
-        _d.y.h = this.element.height();
+        var _d = this.dims = {
+          x: {
+            h: this.element.width(),
+            c: this.element.children().outerWidth()
+          },
+          y: {
+            h: this.element.height(),
+            c: this.element.children().outerHeight()
+          }
+        };
+        // percentage
+        _d.y.p = _d.y.h/_d.y.c;
+        _d.x.p = _d.x.h/_d.x.c;
+
 
         // ** scrollbar-placeholder **
         if(!this.element.children(cp+'placeholder').length)
@@ -46,18 +59,6 @@
           .css('overflow', 'hidden')
           .outerWidth(_d.x.h)
           .outerHeight(_d.y.h);
-
-        // ** scrollbar-container **
-/*        if(!this.wrapper.find(cp+'container').length)
-          this.wrapper.wrapInner($('<div class="' + cp + 'container" />'));
-        this.container = this.wrapper.find('.'+cp+'container');
-*/
-        _d.x.c = this.wrapper.children().outerWidth();
-        _d.y.c = this.wrapper.children().outerHeight();
-
-        // percentage
-        _d.y.p = _d.y.h/_d.y.c;
-        _d.x.p = _d.x.h/_d.x.c;
 
         // offset
         this.offset = {
@@ -110,10 +111,11 @@
           var handle = elSlider.find('.ui-slider-handle');
 
           // set handle height/width
-          handle['outer' + (isV ? 'Height' : 'Width')](Math.round(dims.h*dims.p));
+          var handleSize = Math.max(Math.round(dims.h*dims.p), self.options['handleMin'+(isV ? 'Height' : 'Width')])
+          handle['outer' + (isV ? 'Height' : 'Width')](handleSize);
           
           // re-calculate positions/dims
-          var hH = handle['outer'+ (isV ? 'Height' : 'Width')]()
+          var hH = handleSize
             , hmH = Math.round(hH/2)
             , hS = dims.h - parseInt(elSlider.css(isV ? 'margin-top' : 'margin-left'))*2 - hH
 
@@ -152,8 +154,6 @@
 
       if(this.add.x && this.offset.x > 0)
         addSlider('horizontal');
-
-
     }
     , setPosition: function(v, isV){
         this.wrapper['scroll' + (isV ? 'Top' : 'Left')](this.offset[isV ? 'y' : 'x']*v/100);
