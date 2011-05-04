@@ -8,7 +8,7 @@
         , handleMinWidth: 50
       }
     
-    , _create: function(options) {
+    , _create: function() {
         this.slider = {};
         this.step = {
           x: 20,
@@ -31,6 +31,7 @@
             c: this.element.children().outerHeight()
           }
         };
+
         // percentage
         _d.y.p = _d.y.h/_d.y.c;
         _d.x.p = _d.x.h/_d.x.c;
@@ -56,7 +57,7 @@
 
     , _addElements: function() {
         if(this.add.x || this.add.y) {
-          var cp = this.options.classPrefix
+          var cp = this.options.classPrefix;
 
           // ** scrollbar-placeholder **
           if(!this.element.children(cp+'placeholder').length)
@@ -125,7 +126,8 @@
           // re-calculate positions/dims
           var hH = handleSize
             , hmH = Math.round(hH/2)
-            , hS = dims.h - parseInt(elSlider.css(isV ? 'margin-top' : 'margin-left'))*2 - hH
+            , _hS = dims.h - parseInt(elSlider.css(isV ? 'margin-top' : 'margin-left'))*2 - hH
+            , hS = Math.max(_hS, 0)
 
           // slider size/position
           elSlider.css(isV ? {
@@ -167,12 +169,15 @@
         this.wrapper['scroll' + (isV ? 'Top' : 'Left')](this.offset[isV ? 'y' : 'x']*v/100);
       }
 
+    , _destroy: function(){
+        if(this.placeholder) this.placeholder.find('.ui-slider').remove();
+        if(this.wrapper) this.wrapper.children().first().unwrap().unwrap();
+      }
 
-    , _destroy: function(){ 
-//        this.placeholder.remove();
+    , rebuild: function() {
+        this._destroy();
+        this._create();
       }
 
   });
 })(jQuery);
-//TODO
-// destroy method
